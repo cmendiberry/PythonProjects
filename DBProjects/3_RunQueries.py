@@ -5,11 +5,11 @@ from pathlib import Path
 from sql_utils.db_utilities import manage_foreign_keys, manage_triggers
 
 # Define paths
-BASE_DIR = Path("..\\DBProjects\\QueryPerDbPerInstance")
+BASE_DIR = Path("..\\DBProjects\\\QueryPerDbPerInstance")
 UTILS_DIR = BASE_DIR / "sql_utils"
 sys.path.append(str(UTILS_DIR))
 OUTPUT_DIR = BASE_DIR / "output_sql_scripts"
-CONFIG_FILE = BASE_DIR / "config" / "instances.txt"
+CONFIG_FILE = BASE_DIR / "config" / "instance.txt"
 LOG_DIR = BASE_DIR / "logs"
 
 # Ensure directory exists
@@ -28,7 +28,7 @@ def parse_instances(config_file):
 
 # Get databases in the instance excluding system databases
 def get_databases(instance):
-    excluded_dbs = {"master", "msdb", "model", "tempdb", "Admin"}
+    excluded_dbs = {"master", "msdb", "model", "tempdb"}
     try:
         # Connect to master database to retrieve all databases
         connection = pymssql.connect(
@@ -39,7 +39,7 @@ def get_databases(instance):
             database="master"
         )
         cursor = connection.cursor()
-        cursor.execute("SELECT name FROM sys.databases;") #where name in ('bsav2_demo','Bktb4_CaseMgr_Db')
+        cursor.execute("SELECT name FROM sys.databases;") #where name in ('')
         databases = [row[0] for row in cursor.fetchall() if row[0] not in excluded_dbs]
         connection.close()
         return databases

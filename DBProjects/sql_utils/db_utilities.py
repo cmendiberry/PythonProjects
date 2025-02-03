@@ -4,7 +4,7 @@ import os
 import datetime
 
 # Define base directory for output scripts
-BASE_DIR = Path("..\\DBProjects\\QueryPerDbPerInstance")
+BASE_DIR = Path("..\\DBProjects\\\QueryPerDbPerInstance")
 OUTPUT_DIR = BASE_DIR / "output_sql_scripts"
 LOG_DIR = BASE_DIR / "logs"
 
@@ -28,6 +28,7 @@ def manage_foreign_keys(instance, db):
             password=instance['password'],
             database=db
         )
+        
         cursor = connection.cursor()
         # FK Query
         fk_query = """
@@ -52,11 +53,11 @@ def manage_foreign_keys(instance, db):
             create_fk_commands.append(f'ALTER TABLE [{sch_name}].[{table_name}]  WITH CHECK ADD CONSTRAINT {fk_name} FOREIGN KEY([{parent_column}]) REFERENCES [{referenced_table_schema}].[{referenced_table}] ([{referenced_column}]);')
             delete_fk_commands.append(f"ALTER TABLE [{sch_name}].[{table_name}] DROP CONSTRAINT {fk_name};")
 
-       # Execute FK deletions
+        # Execute FK deletions
         for command in delete_fk_commands:
             try:
                 cursor.execute(command)
-                write_log({instance['fqdn']}, db, "FK", f"Executed: {command}")
+                #write_log({instance['fqdn']}, db, "FK", f"Executed: {command}")
             except Exception as e:
                 write_log({instance['fqdn']}, db, "FK", f"Error executing {command}: {e}")
                 continue  # Continue execution even if an error occurs
@@ -108,11 +109,11 @@ def manage_triggers(instance, db):
             enable_trigger_commands.append(f"ENABLE TRIGGER {tr_name} ON [{sc_name}].[{table_name}];")
             disable_trigger_commands.append(f"DISABLE TRIGGER {tr_name} ON [{sc_name}].[{table_name}];")
 
-        # Execute Trigger disable
+# Execute Trigger disable
         for command in disable_trigger_commands:
             try:
                 cursor.execute(command)
-                write_log(instance['fqdn'], db, "TR", f"Executed: {command}")
+               # write_log(instance['fqdn'], db, "TR", f"Executed: {command}")
             except Exception as e:
                 write_log(instance['fqdn'], db, "TR", f"Error executing {command}: {e}")
                 continue  # Continue execution even if an error occurs
@@ -132,7 +133,193 @@ def manage_triggers(instance, db):
         
     except Exception as e:
         return [f"Error managing triggers for database {db} on instance {instance['fqdn']}: {e}"]
+
+def manage_clones(instance,db):
+    try:
+        connection = pymssql.connect(
+            server=instance['fqdn'],
+            port=instance['port'],
+            user=instance['user'],
+            password=instance['password'],
+            database=db
+        )
+
+        connection.autocommit(True)
+                               
+        try:
+            cursor = connection.cursor()
+
+            clone_db=f"{db}_Clone"
+            # Clone Databases 
+            command= f"DBCC CLonedatabase('{db}','{clone_db}');"
+            cursor.execute(command)
+            print(f"Database cloned successfully: {clone_db}")           
+
+            # Alter Clone Databases to RW
+            command=f"ALTER DATABASE {clone_db} SET READ_WRITE WITH rollback immediate;"
+            cursor.execute(command)
+            print(f"Database {clone_db} set to READ_WRITE mode")
+
+        except Exception as e:
+             write_log(instance['fqdn'], {db}, "CL-RW", f"Error executing {command}: {e}")
         
+    except Exception as e:
+        return [f"Error managing clones for the instance {instance['fqdn']}: {e}"]
+    finally:
+        cursor.close()
+        connection.close()
+
+
+def manage_backups(instance, db, bkp_path):
+    try:
+        # Connect to the database (needed for backup)
+        connection = pymssql.connect(
+            server=instance['fqdn'],
+            port=instance['port'],
+            user=instance['user'],
+            password=instance['password'],
+            database=db
+        )
+        connection.autocommit(True)
+        cursor = connection.cursor()
+
+        try:
+            # Backup Database
+            backup_file = f"{bkp_path}{db}_rb.bak"
+            backup_command = f"""
+                BACKUP DATABASE [{db}]
+                TO DISK = N'{backup_file}'
+                WITH COPY_ONLY, NOFORMAT, INIT, 
+                NAME = N'{db} - Full Database Backup',
+                SKIP, NOREWIND, NOUNLOAD, COMPRESSION, STATS = 10
+            """
+            #print(f"Executing: {backup_command}")
+            cursor.execute(backup_command)
+            print(f"Database Backup successfully created: {backup_file}")
+
+        except Exception as e:
+            write_log(instance['fqdn'], db, "Backup", f"Error executing backup: {e}")
+
+        finally:
+            cursor.close()
+            connection.close()  # Close the connection before dropping
+
+        # Drop the Clone database
+        connection = pymssql.connect(
+            server=instance['fqdn'],
+            port=instance['port'],
+            user=instance['user'],
+            password=instance['password'],
+            database="master"  
+        )
+        connection.autocommit(True)
+        cursor = connection.cursor()
+
+        try:
+            # Force drop connections and drop the database
+            drop_command = f"""
+                ALTER DATABASE [{db}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+                DROP DATABASE [{db}];
+            """
+            #print(f"Executing: {drop_command}")
+            cursor.execute(drop_command)
+            print(f"Database {db} dropped successfully")
+            return["Success"]
+
+        except Exception as e:
+            write_log(instance['fqdn'], db, "Drop", f"Error executing DROP DATABASE: {e}")
+            return["Failed"]
+
+        finally:
+            cursor.close()
+            connection.close()
+
+    except Exception as e:
+        return [f"Error managing backups for instance {instance['fqdn']}: {e}"]
+
+
+def manage_restores(instance, db, bkp_path):
+    cursor = None
+    backup_file = f"{bkp_path}{db}_Clone_rb.bak"
+    try:
+        # connect to target instance
+        connection = pymssql.connect(
+            server=instance['fqdn'],
+            port=instance['port'],
+            user=instance['user'],
+            password=instance['password'],
+            database="master"
+        )
+        connection.autocommit(True)
+        cursor = connection.cursor()
+
+        # Check if the database exists
+        cursor.execute(f"SELECT name FROM sys.databases WHERE name = '{db}'")
+        db_exists = cursor.fetchone() is not None
+
+        # Get default MDF & LDF file locations from target instance
+        cursor.execute(f"""
+            SELECT type_desc, physical_name 
+            FROM sys.master_files 
+            WHERE database_id = DB_ID('{db}')
+        """)
+        file_locations = {row[0]: row[1] for row in cursor.fetchall()}
+
+        # If database doesn't exist, get the default data/log locations from master
+        if not file_locations:
+            cursor.execute("SELECT SERVERPROPERTY('InstanceDefaultDataPath'), SERVERPROPERTY('InstanceDefaultLogPath')")
+            default_data_path, default_log_path = cursor.fetchone()
+            file_locations = {
+                "ROWS": f"{default_data_path}{db}.mdf",
+                "LOG": f"{default_log_path}{db}_log.ldf"
+            }
+
+        # Extract logical file names from the backup
+        cursor.execute(f"RESTORE FILELISTONLY FROM DISK = N'{backup_file}'")
+        backup_files = cursor.fetchall()
+
+        # Build MOVE statements dynamically
+        move_statements = []
+        for file in backup_files:
+            logical_name, file_type = file[0], file[2]
+            new_path = file_locations.get("ROWS" if file_type == "D" else "LOG")
+            if isinstance(new_path, bytes):
+                new_path = new_path.decode('utf-8')  # Decode byte strings if necessary
+            new_path = new_path.replace("b'", "")  # Escape single quotes correctly
+            new_path = new_path.replace("\\'", "\\")  # Remove ' fom the file names
+            new_path = new_path.replace("\\\\", "\\")  # Ensure backslashes are single
+            move_statements.append(f"MOVE N'{logical_name}' TO N'{new_path}'")
+           
+
+            '''
+            if new_path:
+                new_path = new_path.replace("'", "''")  # Escape single quotes for SQL
+                move_statements.append(f"MOVE N'{logical_name}' TO N'{new_path}'")
+            '''
+        # Generate the RESTORE DATABASE command
+        restore_command = f"""
+            RESTORE DATABASE [{db}]
+            FROM DISK = N'{backup_file}'
+            WITH {", ".join(move_statements)}, REPLACE, RECOVERY, STATS = 10;
+        """
+
+        # If database exists, set it to SINGLE_USER mode before restore
+        if db_exists:
+            cursor.execute(f"ALTER DATABASE [{db}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE")
+
+        print(f"Executing: {restore_command}")
+        cursor.execute(restore_command)
+
+        print(f"Database {db} restored successfully!")
+
+    except Exception as e:
+        print(f"Error restoring database {db}: {e}")
+
+    finally:
+        cursor.close()
+        connection.close()
+
+
 def manage_indexes(instance, db):
     try:
         connection = pymssql.connect(

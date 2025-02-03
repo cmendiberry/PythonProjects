@@ -7,7 +7,7 @@ import datetime
 BASE_DIR = Path("..\\DBProjects\\QueryPerDbPerInstance")
 OUTPUT_DIR = BASE_DIR / "output_sql_scripts"
 LOG_DIR = BASE_DIR / "logs"
-CONFIG_FILE = BASE_DIR / "config" / "instances.txt"
+CONFIG_FILE = BASE_DIR / "config" / "instance.txt"
 
 # Ensure directories exist
 os.makedirs(LOG_DIR, exist_ok=True)
