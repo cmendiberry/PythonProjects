@@ -23,13 +23,11 @@ def list_matching_dms_tasks(search_string):
     print('\033[0m')
 
     if not tasks_to_list:
-        prRed("No tasks found containing '{search_string}'")
-       # print(f"\033[31mNo tasks found containing '{search_string}'.\033[0m" .format(skk))
+        prRed(f"No tasks found containing '{search_string}'")       
         return
 
     for task_name, task_arn in tasks_to_list:
         prGreen(f"Migration tasks found: {task_name} (ARN: {task_arn})")
-        #print(f"\033[92m Migration tasks found: {task_name} (ARN: {task_arn})\033[0m")
     
     print('\033[0m')     
 
