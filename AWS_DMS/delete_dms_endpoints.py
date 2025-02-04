@@ -1,4 +1,4 @@
-from aws_connect.aws_credentials import get_aws_client
+from utils.aws_credentials import get_aws_client
 
 # Get AWS DMS client
 client = get_aws_client("dms")

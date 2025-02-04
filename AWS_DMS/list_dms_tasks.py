@@ -1,15 +1,11 @@
-from aws_connect.aws_credentials import get_aws_client
-import os 
-os.system('color')
+from utils.aws_credentials import get_aws_client
+from utils.colors import prGreen, prRed
+
 # Get AWS DMS client
 client = get_aws_client("dms")
 
 # Define the search string
 SEARCH_STRING = input("Enter the search string for task names: ")
-
-# Change pinted color
-def prGreen(skk): print("\033[92m {}\033[00m" .format(skk))
-def prRed(skk): print("\033[91m {}\033[00m" .format(skk))
 
 def list_matching_dms_tasks(search_string):
     """List AWS DMS tasks that contain the given search string in their name."""
@@ -34,7 +30,7 @@ def list_matching_dms_tasks(search_string):
     print("\nList Complete.")
 
 def main():
-    # REtrieve Migration tasks
+    # Retrieve Migration tasks
     list_matching_dms_tasks(SEARCH_STRING)
 
 if __name__ == "__main__":
