@@ -57,12 +57,12 @@ def manage_foreign_keys(instance, db):
         for command in delete_fk_commands:
             try:
                 cursor.execute(command)
+		connection.commit()
                 #write_log({instance['fqdn']}, db, "FK", f"Executed: {command}")
             except Exception as e:
                 write_log({instance['fqdn']}, db, "FK", f"Error executing {command}: {e}")
                 continue  # Continue execution even if an error occurs
-
-        connection.commit()
+        
         connection.close()
 
         # Save FK creation commands to a SQL file
