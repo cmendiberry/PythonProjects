@@ -25,14 +25,15 @@ Fill the files with **no spaces**:
 
 
 # Step 1
-## Execution: Path\PythonDBProjects>python 1_CloneSource.py \<backup path>
+## Execution: Path\PythonDBProjects>python 1_CloneSource.py
 1. In the source MSSQL server (A), this script will create a Clone for each Database without data
-2. These Clones databases will be backup and save in the path provisioned when calling the scripts
-3. All clone databases will be deleted from (A)
+2. The Clone databases will be set to Read-Write
 
 # Step2
 ## Execution: Path\PythonDBProjects>python 2_RestoreClones.py \<backup path>
-1. Restores all backups in the target MSSQL Server (C), grabbing the backup files from the path provisiones when calling the python script
+1. These Clones databases will be backup and save in the path provisioned when calling the scripts
+2. All clone databases will be deleted from (A)
+3. Restores all backups in the target MSSQL Server (C), grabbing the backup files from the path provisiones when calling the python script
 
 # Step 3
 ## Execution: Path\PythonDBProjects>python 3_RunQueries.py
