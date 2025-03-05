@@ -3,6 +3,7 @@ import pymssql
 import subprocess
 from pathlib import Path
 from utils.colors import prRed,prCyan,prGreen
+from utils.encryption.encryptor import encrypt_file, decrypt_file
 
 # Define paths
 BASE_DIR = Path("..\\DMSAssessment")
@@ -11,13 +12,12 @@ assessment = BASE_DIR / "awsdms_support_collector_sql_server.sql"
 
 # Hardcoded databases to exclude
 def get_databases(connection):
-    exclude_dbs = {'master', 'tempdb', 'model', 'msdb', 'Admin','AdcQueryResearch','AqruQueryResearch','Bktb4_JobCoordinator_Db'}
+    exclude_dbs = {'master', 'tempdb', 'model', 'msdb'}
     with connection.cursor() as cursor:
         cursor.execute("SELECT name FROM sys.databases")
         databases = [row[0] for row in cursor.fetchall() if row[0] not in exclude_dbs]
     return databases
 
-#def process_instances(instances_file, folder):
 def process_instances(instance, folder):
     fqdn, port, username, password = instance.strip().split(',') 
     try:
@@ -38,32 +38,33 @@ def process_instances(instance, folder):
                 print(f"Could not connect to {fqdn}:{port} - {e}")
 
 def create_directories(root_folder, instances_file):
+    
+    # Run Assessment for each instance
     try:
-        with open(instances_file, 'r') as f:
-            lines = f.readlines()
-            
-        for line in lines:            
-            line = line.strip()
-            if not line:
-                continue
-
-            parts = line.split(',')
+        # Encrypt file
+        encrypted_file = encrypt_file(instances_file) 
+        # Decrypt file       
+        config_data = decrypt_file(encrypted_file)  
+        # Parse the file, returning tuples (fqdn, port, user, password)
+        lines = config_data.strip().split("\r\n")
+     
+        for line in lines:
+            parts = line.split(",")
+            # Create the main directory for the FQDN
             if len(parts) < 2:
-                print(f"Skipping invalid line: {line}")
-                continue
-
+                 print(f"Skipping invalid line: {line}")
+                 continue
+            
             fqdn = parts[0]
             port = parts[1]
             first_part_of_fqdn = fqdn.split('.')[0]
-
-            # Create the main directory for the FQDN
+         
             fqdn_directory = os.path.join(root_folder, 'DMSAssessments',first_part_of_fqdn)
             os.makedirs(fqdn_directory, exist_ok=True)
-            
             # Create the nested directory for the port
             port_directory = os.path.join(fqdn_directory, port)
             os.makedirs(port_directory, exist_ok=True)
-            
+                    
             print(f"Created directory: {port_directory}")
             process_instances(line, port_directory)
     
@@ -86,6 +87,7 @@ def main():
     # Check if the second argument was provided
     if args.arg2 is None:
         default_value = CONFIG_FILE
+        print(f"default: {CONFIG_FILE}")
         response = input(f"The second argument was not provided. The default value '{default_value}' will be used. Do you want to proceed? (yes/no): ").strip().lower()
 
         if response != "yes":
@@ -95,7 +97,11 @@ def main():
 
     print(f"Arg1: {args.arg1}")
     print(f"Arg2: {args.arg2}")
-    create_directories(args.arg1, args.arg2)
+    
+    try:
+         create_directories(args.arg1, args.arg2)
+    except:print(f"error creating directories")
+    
 
 if __name__ == "__main__":
     main()
