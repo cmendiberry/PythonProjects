@@ -1,0 +1,20 @@
+{
+    "DBClusterARN": "arn:aws:rds:us-east-1:596792614958:cluster:cin2-postgresinstance-wrkstn034-clone-cluster",
+    "DBClusterIdentifier": "cin2-postgresinstance-wrkstn034-clone-cluster",
+    "Engine": "aurora-postgresql",
+    "EngineVersion": "16.6",
+    "MasterUsername": "postgres",
+    "DBSubnetGroup": "dev-risk-iqas-cluster_poc-subnetgroup-use1-nz-01",
+    "VpcSecurityGroups": [
+        "sg-0c31e108bca0970bc",
+        "sg-0fe32651dd3185536"
+    ],
+    "DBClusterParameterGroups": ["custom-aurora-postgresql16-babelfish-compat-14"],
+    "Instances": [
+        {
+            "DBInstanceIdentifier": "cin2-postgresinstance-wrkstn034-clone",
+            "DBInstanceClass": "db.r8g.xlarge",
+            "AvailabilityZone": "us-east-1a"
+        }
+    ]
+}
