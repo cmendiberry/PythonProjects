@@ -21,7 +21,7 @@
 Fill the files with **no spaces**:
    
    *  **instance.txt:** fqdn,port,username,password for the target MSSQL server (C). 
-   *  **sourceddl.txt:** fqdn,port,username,password for the target MSSQL server (A).
+   *  **sourceddl.txt:** fqdn,port,username,password for the source MSSQL server (A).
 
 
 # Step 1
