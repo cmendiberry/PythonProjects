@@ -1,0 +1,50 @@
+{
+    "outputRoot": "..\\PortableBuilds",
+    "cacheDirectory": null,
+    "architecture": "amd64",
+    "workingDirectory": "app",
+    "createZip": true,
+    "verify": true,
+    "verifyInTempCopy": true,
+    "upgradeBuildPip": true,
+    "pyinstallerRequirement": "pyinstaller>=6.0,<7",
+    "pythonDownload": {
+        "baseUrl": "https://www.python.org/ftp/python/",
+        "apiUrl": "https://www.python.org/api/v2/downloads/",
+        "timeoutSeconds": 300,
+        "maxPatchProbe": 40
+    },
+    "timeouts": {
+        "pipSeconds": 1800,
+        "pyinstallerSeconds": 3600,
+        "appProbeSeconds": 60,
+        "importProbeSeconds": 120
+    },
+    "excludeDirectories": [
+        ".git", ".hg", ".svn", ".venv", "venv", "env", ".env", "virtualenv",
+        "__pycache__", ".mypy_cache", ".pytest_cache", ".ruff_cache", ".tox", ".nox",
+        ".idea", ".vscode", ".ipynb_checkpoints", "node_modules", "htmlcov",
+        "build", "dist", "site-packages", ".ppb-cache", ".aws", ".ssh", ".gnupg", ".eggs"
+    ],
+    "excludeFilePatterns": [
+        "*.pyc", "*.pyo", "*.pyd.bak", "*.tmp", "*.temp", "*.bak", "*.swp", "*.swo", "~$*",
+        ".DS_Store", "Thumbs.db", "desktop.ini", ".coverage", ".coverage.*", "*.log",
+        "ppb.json", ".python-version", ".gitignore", ".gitattributes", ".pre-commit-config.yaml"
+    ],
+    "excludeDirectoryPatterns": [
+        "*.egg-info", "*.dist-info"
+    ],
+    "sensitiveFilePatterns": [
+        ".env", ".env.*", "*.key", "*.pfx", "*.p12", "*.pkcs12", "*.ppk", "*.jks", "*.keystore",
+        "id_rsa*", "id_dsa*", "id_ecdsa*", "id_ed25519*", ".pgpass", "pgpass.conf", ".my.cnf",
+        ".netrc", "_netrc", "credentials", "credentials.*", "*.kdbx", "secrets.*", "*.secret",
+        "*.secrets", "client_secret*.json", "service-account*.json", "token.json", "*.token"
+    ],
+    "sensitiveAllowPatterns": [
+        ".env.example", ".env.sample", ".env.template", ".env.dist"
+    ],
+    "secretScanExtensions": [
+        ".json", ".yaml", ".yml", ".ini", ".cfg", ".conf", ".toml", ".env", ".properties", ".xml", ".txt", ".pem", ".crt", ".cer"
+    ],
+    "secretScanMaxBytes": 1048576
+}

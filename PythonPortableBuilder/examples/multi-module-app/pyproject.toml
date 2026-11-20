@@ -1,0 +1,9 @@
+[project]
+name = "inventory-report"
+version = "1.0.0"
+description = "PythonPortableBuilder example: multi-module package with bundled resources"
+requires-python = ">=3.8"
+dependencies = []
+
+[project.scripts]
+inventory-report = "inventory_report.cli:main"

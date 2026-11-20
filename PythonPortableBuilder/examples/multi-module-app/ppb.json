@@ -1,0 +1,7 @@
+{
+    "comment": "Optional per-project settings for PythonPortableBuilder. Command-line parameters take precedence.",
+    "name": "InventoryReport",
+    "safeTestArgs": ["--version"],
+    "exclude": ["notes/*"],
+    "externalPrerequisites": []
+}

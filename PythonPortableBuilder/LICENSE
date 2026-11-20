@@ -1,0 +1,13 @@
+LICENSE NOT YET SELECTED
+
+The owner of this repository has not chosen a software license yet.
+
+Until a license is explicitly added here, no permission is granted to use, copy, modify or
+distribute this software beyond what applicable law allows without a license.
+
+Action required before publishing: choose a license (for example MIT, Apache-2.0, BSD-3-Clause
+or a proprietary license), replace this file with its text, and update the "License" section of
+README.md.
+
+Third-party software used by the toolkit or included in generated packages (CPython, PyInstaller,
+project dependencies) is covered by its own licenses; see README.md.
