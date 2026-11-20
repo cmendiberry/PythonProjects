@@ -24,9 +24,9 @@
     Shows this help.
 
 .EXAMPLE
-    .\verify.ps1 -Path D:\PortableBuilds\E2Reports
+    .\verify.ps1 -Path D:\PortableBuilds\MonthlyReports
 .EXAMPLE
-    .\verify.ps1 -Path D:\PortableBuilds\DBUserManager-executable-onedir.zip
+    .\verify.ps1 -Path D:\PortableBuilds\Tool_Name-executable-onedir.zip
 #>
 [CmdletBinding(DefaultParameterSetName = 'Help')]
 param(

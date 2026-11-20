@@ -20,9 +20,9 @@
     Shows this help.
 
 .EXAMPLE
-    .\rebuild.ps1 -Path D:\PortableBuilds\E2Reports
+    .\rebuild.ps1 -Path D:\PortableBuilds\MonthlyReports
 .EXAMPLE
-    .\rebuild.ps1 -Path D:\PortableBuilds\E2Reports -Clean -Override @{ Source = 'E:\moved\reports' }
+    .\rebuild.ps1 -Path D:\PortableBuilds\MonthlyReports -Clean -Override @{ Source = 'E:\moved\reports' }
 #>
 [CmdletBinding(DefaultParameterSetName = 'Help')]
 param(

@@ -22,7 +22,7 @@
     Shows this help.
 
 .EXAMPLE
-    .\clean.ps1 -Path D:\PortableBuilds\E2Reports
+    .\clean.ps1 -Path D:\PortableBuilds\MonthlyReports
 .EXAMPLE
     .\clean.ps1 -OutputRoot D:\PortableBuilds -IncludeCache -WhatIf
 #>

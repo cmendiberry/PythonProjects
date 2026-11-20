@@ -89,9 +89,9 @@
     Shows this help.
 
 .EXAMPLE
-    .\build.ps1 -Source "D:\projects\reports" -Name "E2Reports" -Type embedded -Output "D:\PortableBuilds"
+    .\build.ps1 -Source "D:\projects\reports" -Name "MonthlyReports" -Type embedded -Output "D:\PortableBuilds"
 .EXAMPLE
-    .\build.ps1 -Source "D:\descargas\dbusers" -Name "DBUserManager" -Type executable -Mode onedir -Output "D:\PortableBuilds"
+    .\build.ps1 -Source "D:\descargas\custom_tool" -Name "Tool_Name" -Type executable -Mode onedir -Output "D:\PortableBuilds"
 .EXAMPLE
     .\build.ps1 -Source .\examples\simple-script\hello.py -Type executable -Mode onefile
 .EXAMPLE
