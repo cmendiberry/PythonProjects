@@ -1,0 +1,70 @@
+# --- Python -----------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# --- Virtual environments -------------------------------------------------------
+.venv/
+venv/
+env/
+virtualenv/
+
+# --- Build output, runtimes, executables, archives ------------------------------
+/PortableBuilds/
+/out/
+/output/
+build/
+dist/
+.build/
+.ppb-cache/
+.ppb-owned.json
+*.spec.bak
+python-*-embed-*.zip
+*.exe
+*.zip
+*.zip.sha256
+*.partial
+
+# --- Local, machine-specific settings -------------------------------------------
+config/local.json
+*.local.json
+.vscode/
+.idea/
+*.code-workspace
+
+# --- Secrets and credentials -----------------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+*.p12
+id_rsa*
+.pgpass
+credentials
+credentials.*
+secrets.*
+
+# --- Temporary files ---------------------------------------------------------------
+*.tmp
+*.temp
+*.log
+*.bak
+*.swp
+~$*
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# --- Tooling ------------------------------------------------------------------------
+tests/.tools/
+TestResults/
+testResults.xml
