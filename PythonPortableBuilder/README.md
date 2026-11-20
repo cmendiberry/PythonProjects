@@ -10,8 +10,8 @@ The destination server does **not** need a Python installation, pip, internet ac
 changes, registry changes or administrator rights to install Python.
 
 ```powershell
-.\build.ps1 -Source "D:\projects\reports" -Name "E2Reports" -Type embedded -Output "D:\PortableBuilds"
-.\build.ps1 -Source "D:\descargas\dbusers" -Name "DBUserManager" -Type executable -Mode onedir -Output "D:\PortableBuilds"
+.\build.ps1 -Source "D:\projects\reports" -Name "MonthlyReports" -Type embedded -Output "D:\PortableBuilds"
+.\build.ps1 -Source "D:\descargas\custom_tool" -Name "Tool_Name" -Type executable -Mode onedir -Output "D:\PortableBuilds"
 ```
 
 No project-specific scripts are needed: the toolkit analyses the project, chooses the entry point and
@@ -22,23 +22,42 @@ without changing the toolkit's source code.
 
 ## Contents
 
-1. [Packaging methods](#packaging-methods)
-2. [Requirements](#requirements)
-3. [Installation](#installation)
-4. [Usage](#usage)
-5. [Parameters](#parameters)
-6. [What the build does](#what-the-build-does)
-7. [Output layout](#output-layout)
-8. [Validation](#validation)
-9. [Per-project configuration (ppb.json)](#per-project-configuration-ppbjson)
-10. [Database applications](#database-applications)
-11. [Updating an embedded application](#updating-an-embedded-application)
-12. [Troubleshooting](#troubleshooting)
-13. [Security](#security)
-14. [Limitations](#limitations)
-15. [Repository layout](#repository-layout)
-16. [Testing the toolkit](#testing-the-toolkit)
-17. [License](#license)
+- [PythonPortableBuilder](#pythonportablebuilder)
+  - [Contents](#contents)
+  - [Packaging methods](#packaging-methods)
+  - [Requirements](#requirements)
+    - [Build machine](#build-machine)
+    - [Destination server](#destination-server)
+  - [Installation](#installation)
+  - [Usage](#usage)
+    - [A simple script](#a-simple-script)
+    - [A multi-module project](#a-multi-module-project)
+    - [An embedded package](#an-embedded-package)
+    - [A onefile executable](#a-onefile-executable)
+    - [A onedir executable](#a-onedir-executable)
+    - [An explicit Python version](#an-explicit-python-version)
+    - [An explicit entry point](#an-explicit-entry-point)
+    - [A custom output directory](#a-custom-output-directory)
+    - [Rebuilding an existing distribution](#rebuilding-an-existing-distribution)
+    - [Verifying an existing package](#verifying-an-existing-package)
+    - [Cleaning temporary build files](#cleaning-temporary-build-files)
+  - [Parameters](#parameters)
+  - [What the build does](#what-the-build-does)
+    - [Embedded backend](#embedded-backend)
+    - [Executable backend](#executable-backend)
+    - [Python version selection](#python-version-selection)
+  - [Output layout](#output-layout)
+    - [build-manifest.json](#build-manifestjson)
+  - [Validation](#validation)
+  - [Per-project configuration (ppb.json)](#per-project-configuration-ppbjson)
+  - [Database applications](#database-applications)
+  - [Updating an embedded application](#updating-an-embedded-application)
+  - [Troubleshooting](#troubleshooting)
+  - [Security](#security)
+  - [Limitations](#limitations)
+  - [Repository layout](#repository-layout)
+  - [Testing the toolkit](#testing-the-toolkit)
+  - [License](#license)
 
 ---
 
@@ -133,7 +152,7 @@ D:\PortableBuilds\cleanup\distribution\run.cmd --dry-run
 ### A multi-module project
 
 ```powershell
-.\build.ps1 -Source D:\projects\reports -Name E2Reports -Type embedded -Output D:\PortableBuilds
+.\build.ps1 -Source D:\projects\reports -Name MonthlyReports -Type embedded -Output D:\PortableBuilds
 ```
 
 ### An embedded package
@@ -151,7 +170,7 @@ D:\PortableBuilds\cleanup\distribution\run.cmd --dry-run
 ### A onedir executable
 
 ```powershell
-.\build.ps1 -Source D:\descargas\dbusers -Name DBUserManager -Type executable -Mode onedir -Output D:\PortableBuilds
+.\build.ps1 -Source D:\descargas\custom_tool -Name Tool_Name -Type executable -Mode onedir -Output D:\PortableBuilds
 ```
 
 ### An explicit Python version
@@ -179,24 +198,24 @@ D:\PortableBuilds\cleanup\distribution\run.cmd --dry-run
 ### Rebuilding an existing distribution
 
 ```powershell
-.\rebuild.ps1 -Path D:\PortableBuilds\E2Reports                 # same parameters as the original build
-.\rebuild.ps1 -Path D:\PortableBuilds\E2Reports -Clean          # also recreate build environments
-.\rebuild.ps1 -Path D:\PortableBuilds\E2Reports -Override @{ PythonVersion = '3.12'; Source = 'E:\moved\reports' }
+.\rebuild.ps1 -Path D:\PortableBuilds\MonthlyReports                 # same parameters as the original build
+.\rebuild.ps1 -Path D:\PortableBuilds\MonthlyReports -Clean          # also recreate build environments
+.\rebuild.ps1 -Path D:\PortableBuilds\MonthlyReports -Override @{ PythonVersion = '3.12'; Source = 'E:\moved\reports' }
 ```
 
 ### Verifying an existing package
 
 ```powershell
-.\verify.ps1 -Path D:\PortableBuilds\E2Reports                          # package directory
-.\verify.ps1 -Path D:\PortableBuilds\DBUserManager-executable-onedir.zip  # ZIP (checksum + contents)
+.\verify.ps1 -Path D:\PortableBuilds\MonthlyReports                          # package directory
+.\verify.ps1 -Path D:\PortableBuilds\Tool_Name-executable-onedir.zip  # ZIP (checksum + contents)
 # On the destination server, without the toolkit:
-powershell -NoProfile -ExecutionPolicy Bypass -File D:\Apps\E2Reports\verify.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File D:\Apps\MonthlyReports\verify.ps1
 ```
 
 ### Cleaning temporary build files
 
 ```powershell
-.\clean.ps1 -Path D:\PortableBuilds\E2Reports                   # removes <package>\.build only
+.\clean.ps1 -Path D:\PortableBuilds\MonthlyReports                   # removes <package>\.build only
 .\clean.ps1 -OutputRoot D:\PortableBuilds -IncludeCache -WhatIf # preview cleaning every package + runtime cache
 ```
 
@@ -323,23 +342,23 @@ powershell -NoProfile -ExecutionPolicy Bypass -File D:\Apps\E2Reports\verify.ps1
 
 ```text
 D:\PortableBuilds\
-├── E2Reports\                       <- package directory (marked with .ppb-owned.json)
-│   ├── distribution\                <- what you deploy (also inside the ZIP, under E2Reports\)
+├── MonthlyReports\                       <- package directory (marked with .ppb-owned.json)
+│   ├── distribution\                <- what you deploy (also inside the ZIP, under MonthlyReports\)
 │   ├── build-manifest.json          <- final manifest incl. ZIP checksum and validation results
 │   ├── build.log                    <- complete log
 │   ├── build-config.json            <- parameters for rebuild.ps1
 │   ├── analysis.json                <- static analysis report
 │   ├── pyinstaller\                 <- (executable) .spec, warnings, PyInstaller output log
 │   └── .build\                      <- temporary: virtual environment, staging (removed by clean.ps1)
-├── E2Reports-embedded.zip  (+ .sha256)
-├── DBUserManager-executable-onedir.zip  (+ .sha256)
+├── MonthlyReports-embedded.zip  (+ .sha256)
+├── Tool_Name-executable-onedir.zip  (+ .sha256)
 └── .ppb-cache\                      <- downloaded runtimes, shared pip environments
 ```
 
 Embedded distribution:
 
 ```text
-E2Reports\
+MonthlyReports\
 ├── runtime\         python.exe, python3.dll, python3XX.dll, python3XX.zip, python3XX._pth, ...
 ├── packages\        third-party dependencies
 ├── app\             your project (unchanged)
@@ -409,13 +428,16 @@ Optional file in the project root (never copied into the distribution). Command-
 
 ```json
 {
-    "name": "E2Reports",
-    "entryPoint": "e2reports.cli:main",
+    "name": "MonthlyR
+  eports",
+    "entryPoint": "Monthlyr
+  eports.cli:main",
     "pythonVersion": "3.11",
     "requirements": "requirements-prod.txt",
     "include": ["templates/**/*.xlsx"],
     "exclude": ["notes/*", "samples/large/*"],
-    "hiddenImports": ["e2reports.plugins.sales"],
+    "hiddenImports": ["Monthlyr
+  eports.plugins.sales"],
     "dataFiles": ["certs/global-bundle.pem;certs"],
     "additionalPaths": ["lib"],
     "safeTestArgs": ["--version"],
